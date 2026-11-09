@@ -16,7 +16,7 @@ function safeLoad(){
   } catch { return {coins:250,owned:{}}; }
 }
 export default function App(){
-  const [lang,setLang]=useState(()=>localStorage.getItem('cat-lang')==='en'?'en':'ru');
+  const [lang,setLang]=useState(()=>{try{return localStorage.getItem('cat-lang')==='en'?'en':'ru';}catch{return 'ru';}});
   const [page,setPage]=useState('home');
   const [save,setSave]=useState(safeLoad);
   const [last,setLast]=useState(null);
@@ -64,14 +64,14 @@ export default function App(){
           <button className="primary" disabled={spinning} onClick={spin}>{spinning?'…':t.spin}</button>
           {message&&<p className="notice" role="status">{message}</p>}
         </section>
-        <section className="panel latest"><h2>{t.recent}</h2>{last?<CatTile cat={last} label={rarityLabel(last.rarity)} count={save.owned[last.id]||1}/>:<div className="empty">{t.empty}</div>}</section>
+        <section className="panel latest"><h2>{t.recent}</h2>{last?<CatTile cat={last} label={rarityLabel(last.rarity)} count={save.owned[last.id]||1} lang={lang}/>:<div className="empty">{t.empty}</div>}</section>
       </>}
-      {page==='collection'&&<><section className="page-heading"><span className="eyebrow">YOUR CAT ALBUM</span><h1>{t.collection}</h1><p>{t.count}: {Object.keys(save.owned).length} / {cats.length}</p><div className="progress"><span style={{width:(Object.keys(save.owned).length/cats.length*100)+'%'}}/></div></section><div className="cat-grid">{cats.map(cat=><CatTile key={cat.id} cat={cat} label={rarityLabel(cat.rarity)} count={save.owned[cat.id]||0} unknown={!save.owned[cat.id]}/>)}</div></>}
+      {page==='collection'&&<><section className="page-heading"><span className="eyebrow">YOUR CAT ALBUM</span><h1>{t.collection}</h1><p>{t.count}: {Object.keys(save.owned).length} / {cats.length}</p><div className="progress"><span style={{width:(Object.keys(save.owned).length/cats.length*100)+'%'}}/></div></section><div className="cat-grid">{cats.map(cat=><CatTile key={cat.id} cat={cat} label={rarityLabel(cat.rarity)} count={save.owned[cat.id]||0} unknown={!save.owned[cat.id]} lang={lang}/>)}</div></>}
       {page==='games'&&<><section className="page-heading"><span className="eyebrow">PLAY TO EARN</span><h1>{t.games}</h1><p>{t.earn}</p></section><section className="panel mini-game"><div className="game-icon">🐾</div><h2>Tap the Kitty</h2><p>{t.earn}</p><div className="tap-count">{taps} / 10</div><button className="primary" onClick={playing?()=>setTaps(v=>Math.min(10,v+1)):startGame}>{playing?'🐾 TAP!':t.start}</button><button className="secondary" disabled={!playing||taps<10} onClick={claim}>{t.finish} · 25 🪙</button><p className="muted">10 taps = 25 coins</p></section>{message&&<p className="notice">{message}</p>}</>}
     </main>
     <footer>CAT COLLECTION · COLLECT THEM ALL</footer>
   </div>;
 }
-function CatTile({cat,label,count,unknown=false}){
-  return <article className={'cat-tile '+cat.rarity}><div className="cat-art">{unknown?'?':cat.emoji}</div><div className="cat-info"><span className="rarity">{label}</span><h3>{unknown?'???':cat.name}</h3><p>{unknown?'Unlock this card to discover the cat.':cat.description}</p><small>{unknown?'Not found':'× '+count}</small></div></article>;
+function CatTile({cat,label,count,unknown=false,lang='ru'}){
+  return <article className={'cat-tile '+cat.rarity}><div className="cat-art">{unknown?'?':cat.emoji}</div><div className="cat-info"><span className="rarity">{label}</span><h3>{unknown?'???':(lang==='en'?cat.nameEn:cat.name)}</h3><p>{unknown?(lang==='en'?'Discover this card to reveal the cat.':'Открой карточку, чтобы узнать котёнка.'):(lang==='en'?cat.descriptionEn:cat.description)}</p><small>{unknown?(lang==='en'?'Not found':'Не найден'): '× '+count}</small></div></article>;
 }
